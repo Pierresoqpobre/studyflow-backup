@@ -8,9 +8,10 @@ namespace WindowsFormsApp1
 {
     static public class Nomeusuario
     {
-        public static string[] nomecliente = new string[250];
+        public static string [] nomes = new string[250];
+        public static string [] senhas = new string[250];
         public static string[] logados = new string[250];
-        public static string[] senhacliente = new string[250];
+        public static int contador = 0;
 
 
     }
