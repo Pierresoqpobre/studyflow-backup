@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Npgsql;
 
 namespace WindowsFormsApp1
 {
@@ -22,13 +23,14 @@ namespace WindowsFormsApp1
             string nome = txtNome.Text.Trim();
             string senha = txtSenha.Text;
 
+
             if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(senha))
             {
                 MessageBox.Show("Por favor, preencha nome e senha.");
                 return;
             }
 
-            if (    Nomeusuario.contador >= Nomeusuario.nomes.Length)
+            if (Nomeusuario.contador >= Nomeusuario.nomes.Length)
             {
                 MessageBox.Show("Limite de cadastros atingido.");
                 return;
@@ -37,13 +39,35 @@ namespace WindowsFormsApp1
             // Cadastra nos vetores
             Nomeusuario.nomes[Nomeusuario.contador] = nome;
             Nomeusuario.senhas[Nomeusuario.contador] = senha;
+            string connString = "Host=localhost;Port=5432;Username=postgres;Password=pgadmin;Database=StudyFlow";
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(connString))
+                {
+                    conn.Open();
 
-            MessageBox.Show($"Cadastro realizado com sucesso! (Posição {Nomeusuario.contador})");
+                    string sql = "INSERT INTO registros (Nome, Senha) VALUES (@nome, @senha)";
+                    using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("nome", nome);
+                        cmd.Parameters.AddWithValue("senha", senha);
 
-            // Limpa os campos e incrementa o contador
-            txtNome.Clear();
-            txtSenha.Clear();
-            Nomeusuario.contador++;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao salvar no banco: " + ex.Message);
+                return;
+
+                MessageBox.Show($"Cadastro realizado com sucesso! (Posição {Nomeusuario.contador})");
+
+                // Limpa os campos e incrementa o contador
+                txtNome.Clear();
+                txtSenha.Clear();
+                Nomeusuario.contador++;
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
